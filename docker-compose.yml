@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  mydb:
+    image: postgres:17
+    
+    restart: always
+    environment:
+      POSTGRES_DB: blnk
+      POSTGRES_USER: edson
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - blnk:/var/lib/postgresql/data
+
+
+volumes:
+  blnk:
