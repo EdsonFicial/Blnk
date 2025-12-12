@@ -5,6 +5,7 @@ import java.util.*;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 @Entity(name = "transactions")
 public class TransactionEntity {
     @Id
@@ -25,6 +26,15 @@ public class TransactionEntity {
 
     @jakarta.persistence.Column(nullable = false)
     private String userName;
+
+
+     // Gera o ID automaticamente antes de persistir
+    @PrePersist
+    public void generateId() {
+        if (this.id == null || this.id.isEmpty()) {
+            this.id = "tx-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        }
+    }
 
     
     public TransactionEntity(String id, String tipo, double valor, LocalDateTime data, String user_id, String userName) {

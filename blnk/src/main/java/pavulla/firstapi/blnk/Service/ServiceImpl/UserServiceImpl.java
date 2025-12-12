@@ -4,10 +4,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import javax.management.DefaultLoaderRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transaction;
@@ -22,13 +19,19 @@ public class UserServiceImpl implements UserService {
     
 
     @Autowired
-    private final UserRepository userRepository;
-    private final DepositRepository depositRepository;
+    private UserRepository userRepository;
+    
+    @Autowired
+    private DepositRepository depositRepository;
+    
+    @Autowired
     private TransactionRepository transactionRepository;
+    
+    @Autowired
     private WithdrawRepository withdrawRepository;
-    private UserResponseDTO ur;
-    private UserEntity user;
-    private TransactionEntity transaction;
+    // private UserResponseDTO ur;
+    // private UserEntity user;
+    // private TransactionEntity transaction;
     
 
     // O Spring vai injetar o repositório aqui
@@ -43,6 +46,7 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public UserResponseDTO CreateUser(CreateUserDTO dto){
+        UserEntity user = new UserEntity();
        
         user.setName(dto.getName());
         user.setEmail(dto.getEmail());
@@ -50,18 +54,21 @@ public class UserServiceImpl implements UserService {
         user.setbalance(0.0);
         UserEntity usr = userRepository.save(user);
 
+        UserResponseDTO ur = new UserResponseDTO();
+
         ur = new UserResponseDTO(
             usr.getId(),
             usr.getName(),
             usr.getEmail(),
-            usr.getbalance()); 
+            usr.getbalance()
+        );
 
-            //System.out.println("User created successfully: " + user.toString());
-            System.out.println("Use created Successful: " + ur.toString());
-        
-          return ur;
+        //System.out.println("User created successfully: " + user.toString());
+        System.out.println("Use created Successful: " + ur.toString());
+        return ur;
         
     }   
+    
     @Override
     public List<UserResponseDTO> getAllUsers() {
         List<UserEntity> users = userRepository.findAll();
@@ -82,7 +89,7 @@ public class UserServiceImpl implements UserService {
         List<UserEntity> users = userRepository.findAll();
         DepositEntity deposit = new DepositEntity();
     
-            if(depositDTO.getUserId()!=null){
+            if(depositDTO.getUserId()!=null && !depositDTO.getUserId().equals("")){
                 for(UserEntity user : users){
                     if(user.getId().equals(depositDTO.getUserId())) {
                         deposit.setAmount(depositDTO.getAmount());
@@ -92,6 +99,7 @@ public class UserServiceImpl implements UserService {
                         depositRepository.save(deposit);
                         System.out.println("" + user.getName() + " has deposited " + depositDTO.getAmount() + " at " + LocalDateTime.now());    
                         // Save the transaction Entity
+                        TransactionEntity transaction = new TransactionEntity();
                         transaction.setTipo("deposit");
                         transaction.setValor(depositDTO.getAmount());
                         transaction.setData(depositDTO.getDepositedAt());
@@ -105,6 +113,7 @@ public class UserServiceImpl implements UserService {
                 }
             }else{
                 System.out.println("User ID is null");
+                return null;
             }
         return deposit;
     }
@@ -118,6 +127,8 @@ public class UserServiceImpl implements UserService {
             if(withdrawDTO.getUserId() != null ) {
                 for(UserEntity user : users) {
                     if(user.getId().equals(withdrawDTO.getUserId())) {
+
+                        TransactionEntity transaction = new TransactionEntity();
                         transaction.setUserName(user.getName());
                         user.setbalance(user.getbalance() - withdrawDTO.getAmount());
                         userRepository.save(user);

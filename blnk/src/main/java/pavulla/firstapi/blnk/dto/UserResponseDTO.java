@@ -1,7 +1,5 @@
 package pavulla.firstapi.blnk.dto;
 
-
-import pavulla.firstapi.blnk.models.UserEntity;
 public class UserResponseDTO {
     private String id;
     private String name;
@@ -18,7 +16,9 @@ public class UserResponseDTO {
         this.balance = balance;
     }
 
-    
+    public String getId() {
+        return id;
+    }    
 
     public String getName() {
         return name;
