@@ -9,12 +9,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import pavulla.firstapi.blnk.Service.UserService;
-import pavulla.firstapi.blnk.Service.ServiceImpl.UserServiceImpl;
 import pavulla.firstapi.blnk.dto.CreateUserDTO;
 import pavulla.firstapi.blnk.dto.UserResponseDTO;
 import pavulla.firstapi.blnk.models.UserEntity;
 import pavulla.firstapi.blnk.repository.UserRepository;
+import pavulla.firstapi.blnk.service.UserService;
+import pavulla.firstapi.blnk.service.ServiceImpl.UserServiceImpl;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;

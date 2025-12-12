@@ -9,12 +9,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.transaction.Transaction;
-import pavulla.firstapi.blnk.Service.ServiceImpl.UserServiceImpl;
 import pavulla.firstapi.blnk.dto.DepositDTO;
 import pavulla.firstapi.blnk.models.DepositEntity;
 import pavulla.firstapi.blnk.models.TransactionEntity;
 import pavulla.firstapi.blnk.repository.DepositRepository;
 import pavulla.firstapi.blnk.repository.TransactionRepository;
+import pavulla.firstapi.blnk.service.ServiceImpl.UserServiceImpl;
 
 
 

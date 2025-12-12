@@ -1,4 +1,4 @@
-package pavulla.firstapi.blnk.Service;
+package pavulla.firstapi.blnk.service;
 import pavulla.firstapi.blnk.dto.CreateUserDTO;
 import pavulla.firstapi.blnk.dto.DepositDTO;
 import pavulla.firstapi.blnk.dto.UserResponseDTO;

@@ -5,14 +5,12 @@ public class CreateUserDTO {
     private String name;
     private String email;
     private String password;
-    private double balance;
 
     // Default constructor 
-    public CreateUserDTO(String name, String email, String password, double balance) {
+    public CreateUserDTO(String name, String email, String password) {
         this.name = name;
         this.email = email;
         this.password = password;
-        this.balance = balance;
     }
 
     //Getters and Setters
@@ -38,14 +36,6 @@ public class CreateUserDTO {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public double getBalance() {
-        return balance;
-    }
-
-    public void setBalance(double balance) {
-        this.balance = balance;
     }
     
 }

@@ -1,4 +1,4 @@
-package pavulla.firstapi.blnk.Service.ServiceImpl;
+package pavulla.firstapi.blnk.service.ServiceImpl;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -8,10 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transaction;
-import pavulla.firstapi.blnk.Service.UserService;
 import pavulla.firstapi.blnk.dto.*;
 import pavulla.firstapi.blnk.models.*;
-import pavulla.firstapi.blnk.repository.*; 
+import pavulla.firstapi.blnk.repository.*;
+import pavulla.firstapi.blnk.service.UserService; 
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -47,20 +47,24 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDTO CreateUser(CreateUserDTO dto){
         UserEntity user = new UserEntity();
-       
+        AccountEntity acc = new AccountEntity();
+
         user.setName(dto.getName());
         user.setEmail(dto.getEmail());
         user.setPassword(dto.getPassword());
         user.setbalance(0.0);
-        UserEntity usr = userRepository.save(user);
+        user = userRepository.save(user);
 
+        acc.setUserid(user.getId());
+        acc.setBalance(0);
         UserResponseDTO ur = new UserResponseDTO();
 
         ur = new UserResponseDTO(
-            usr.getId(),
-            usr.getName(),
-            usr.getEmail(),
-            usr.getbalance()
+            user.getId(),
+            user.getName(),
+            user.getEmail(),
+            acc.getId(),
+            acc.getBalance()
         );
 
         //System.out.println("User created successfully: " + user.toString());
@@ -72,12 +76,19 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserResponseDTO> getAllUsers() {
         List<UserEntity> users = userRepository.findAll();
+        AccountEntity acc = new AccountEntity();
+
         
         return users.stream()
         .map(user -> new UserResponseDTO(user.getId(),
-            user.getName(),user.getEmail(),
-            user.getbalance())).collect(Collectors.toList());
+            user.getName(),
+            user.getEmail(),
+            acc.getId(),
+            acc.getBalance()
+            )).collect(Collectors.toList()
+        );
     }
+
     @Override
     public Transaction getUserTransactions(String userId) {
         // TODO Auto-generated method stub
@@ -98,6 +109,7 @@ public class UserServiceImpl implements UserService {
                         user.setbalance(user.getbalance() + depositDTO.getAmount());
                         depositRepository.save(deposit);
                         System.out.println("" + user.getName() + " has deposited " + depositDTO.getAmount() + " at " + LocalDateTime.now());    
+                        
                         // Save the transaction Entity
                         TransactionEntity transaction = new TransactionEntity();
                         transaction.setTipo("deposit");
@@ -152,11 +164,5 @@ public class UserServiceImpl implements UserService {
             System.out.println("User ID is null");
             }
         return null;
-    }
-    
-    
-
-    
-
-    
+    }    
 }
