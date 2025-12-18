@@ -18,9 +18,14 @@ public class AccountEntity {
 
     @Column(name = "userid", nullable = false)
     private String userid;
+
+    @Column(name = "user_name")
+    private String user_name;
+
     @Column(name = "balance")
     private double balance;
 
+     // Gera o ID automaticamente antes de persistir
     @PrePersist
     public void generateId() {
         if (this.id == null || this.id.isEmpty()) {
@@ -31,8 +36,9 @@ public class AccountEntity {
     public AccountEntity(){
     }
 
-    public AccountEntity(String userid, double balance) {
+    public AccountEntity(String userid, String user_name,double balance) {
         this.userid = userid;
+        this.user_name = user_name;
         this.balance = balance;
     }
 
@@ -58,6 +64,13 @@ public class AccountEntity {
 
     public void setBalance(double balance) {
         this.balance = balance;
+    }
+
+    public String getUser_name() {
+        return user_name;
+    }
+    public void setUser_name(String user_name) {
+        this.user_name = user_name;
     }
 
 }

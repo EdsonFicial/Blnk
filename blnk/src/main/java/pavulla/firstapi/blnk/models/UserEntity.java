@@ -1,7 +1,7 @@
 package pavulla.firstapi.blnk.models;
 import java.util.UUID;
 
-import org.antlr.v4.runtime.misc.NotNull;
+
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,8 +26,8 @@ public class UserEntity {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "balance")
-    private double balance;
+    @Column(name = "account_id",nullable = false)
+    private String accountId;
 
      // Gera o ID automaticamente antes de persistir
     @PrePersist
@@ -39,11 +39,11 @@ public class UserEntity {
 
     public UserEntity() {
     }
-    public UserEntity(String name, String email, String password, double balance) {
+    public UserEntity(String name, String email, String password, String accountId) {
         this.name = name;
         this.email = email;
         this.password = password;
-        this.balance = balance;
+        this.accountId = accountId;
     }
 
     public String getId() {
@@ -73,19 +73,18 @@ public class UserEntity {
     public void setPassword(String password) {
         this.password = password;
     }
-
-    public double getbalance() {
-        return balance;
+    public String getAccountId() {
+        return accountId;
+    }
+    public void setAccountId(String accountId) {
+        this.accountId = accountId;
     }
 
-    public void setbalance(double balance) {
-        this.balance = balance;
-    }
+    
 
     @Override
     public String toString() {
-        return "UserEntity [id=" + id + ", name=" + name + ", email=" + email + ", password=" + password + ", balance="
-                + balance + "]";
+        return "UserEntity [id=" + id + ", name=" + name + ", email=" + email + ", password=" + password + ", accountId=" + accountId + "]";
     }
     
     

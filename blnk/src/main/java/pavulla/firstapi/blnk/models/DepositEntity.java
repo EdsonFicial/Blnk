@@ -19,8 +19,13 @@ public class DepositEntity {
     private LocalDateTime depositedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private UserEntity user;
+    private String user_name;
+   
+    @ManyToOne
+    @JoinColumn(name = "acc_id", nullable = false)
+    private AccountEntity account;
 
      // Gera o ID automaticamente antes de persistir
     @PrePersist
@@ -34,10 +39,12 @@ public class DepositEntity {
         // No-arg constructor
     }
 
-    public DepositEntity(Double amount, LocalDateTime depositedAt, UserEntity user) {
+    public DepositEntity(Double amount, LocalDateTime depositedAt, UserEntity user, String user_name, AccountEntity account) {
         this.amount = amount;
         this.depositedAt = depositedAt;
         this.user = user;
+        this.user_name = user_name;
+        this.account = account;
     }
 
     public String getId() {
@@ -60,11 +67,25 @@ public class DepositEntity {
         this.depositedAt = depositedAt;
     }
 
-    public UserEntity getUser() {
-        return user;
-    }
+//    // public UserEntity getUser() {
+//         return user;
+//     }
 
     public void setUser(UserEntity user) {
         this.user = user;
+    }
+    public String getUser_name() {
+        return user_name;
+    }
+    public void setUser_name(String user_name) {
+        this.user_name = user_name;
+    }
+
+    // public AccountEntity getAccount() {
+    //     return account;
+    // }
+    
+    public void setAccount(AccountEntity account) {
+        this.account = account;
     }
 }

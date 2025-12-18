@@ -3,7 +3,6 @@ package pavulla.firstapi.blnk.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,8 +12,8 @@ import pavulla.firstapi.blnk.dto.CreateUserDTO;
 import pavulla.firstapi.blnk.dto.UserResponseDTO;
 import pavulla.firstapi.blnk.models.UserEntity;
 import pavulla.firstapi.blnk.repository.UserRepository;
-import pavulla.firstapi.blnk.service.UserService;
-import pavulla.firstapi.blnk.service.ServiceImpl.UserServiceImpl;
+
+import pavulla.firstapi.blnk.Service.ServiceImpl.UserServiceImpl;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +29,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 public class UserController {
     @Autowired
     private UserRepository userRepository;
-    private final UserServiceImpl userService;
+    private UserServiceImpl userService;
 
 
     
@@ -73,8 +72,6 @@ public class UserController {
         UserEntity existingUser = userRepository.findById(id).get();
         existingUser.setName(user.getName());
         existingUser.setEmail(user.getEmail());
-        existingUser.setPassword(user.getPassword());
-        existingUser.setbalance(user.getbalance());
         
         return userRepository.save(existingUser);
     }
@@ -83,6 +80,7 @@ public class UserController {
     public String deleteUser(@PathVariable String id) {
         try {
             userRepository.deleteById(id);
+            
             return "user deleted successfully";
         } catch (Exception e) {
             

@@ -1,20 +1,22 @@
 package pavulla.firstapi.blnk.controllers;
 
 import java.util.HashMap;
-import java.util.List;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.transaction.Transaction;
+import jakarta.persistence.EntityNotFoundException;
+import pavulla.firstapi.blnk.dto.CheckBalanceDTO;
 import pavulla.firstapi.blnk.dto.DepositDTO;
+import pavulla.firstapi.blnk.models.AccountEntity;
 import pavulla.firstapi.blnk.models.DepositEntity;
 import pavulla.firstapi.blnk.models.TransactionEntity;
-import pavulla.firstapi.blnk.repository.DepositRepository;
+
 import pavulla.firstapi.blnk.repository.TransactionRepository;
-import pavulla.firstapi.blnk.service.ServiceImpl.UserServiceImpl;
+import pavulla.firstapi.blnk.Service.ServiceImpl.UserServiceImpl;
 
 
 
@@ -28,58 +30,80 @@ public class TransactionController {
     private UserServiceImpl userService ;
 
     @Autowired
-    private DepositRepository depositRepository;
+    
+    private TransactionRepository Txrepository;
+    
+    
     
     @PostMapping("/deposits")
     public ResponseEntity DepositMoney(@RequestBody DepositDTO deposit) {
 
         HashMap<String, String> error = new HashMap<>();
         
-        if (deposit.getUserId() == null) {
+        // 1️⃣ Validação do accountId
+        if (deposit.getAccount() == null || deposit.getAccount().isBlank()) {
             error.put("error", "400");
-            error.put("message", "user id is required");
-
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+            error.put("message", "account is required");
+            return ResponseEntity.badRequest().body(error);
         }
 
-            if (deposit.getAmount() < 100) {
+        // 2️⃣ Validação do valor
+        if (deposit.getAmount() == 0.0 || deposit.getAmount() < 100) {
             error.put("error", "400");
-            error.put("message", "invalid amount");
-
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+            error.put("message", "invalid amount (minimum is 100)");
+            return ResponseEntity.badRequest().body(error);
         }
-        
-        DepositEntity deposited = userService.depositMoney(deposit);
-        if (deposited == null) {
+
+        // 3️⃣ Executa o serviço
+        try {
+            DepositEntity deposited = userService.depositMoney(deposit);
+            return ResponseEntity.status(HttpStatus.CREATED).body(deposited);
+
+        } catch (EntityNotFoundException e) {
+            error.put("error", "404");
+            error.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+
+        } catch (Exception e) {
             error.put("error", "500");
             error.put("message", "unexpected error");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(deposited);
-        // Logic to save the deposit
     }
 
     @GetMapping("/transactions/{userid}")
     public TransactionEntity GetTransactions(@PathVariable String id){
-
-
-        return null;
+      return Txrepository.findById(id).get();
     }
 
-    @GetMapping("/deposits/{id}")
-    public DepositEntity getDepositById(@PathVariable String id) {
+    @GetMapping("/checkbalance/{id}")
+    public ResponseEntity<?> checkBalance(@RequestBody CheckBalanceDTO checkBalanceDTO) {
 
-        return depositRepository.findById(id).get();
-                
-        // List<DepositEntity> deposits = depositRepository.findAll();
-        // for (DepositEntity deposit : deposits) {
-        //     if (deposit.getId().equals(id)) {
-        //         return deposit;
-        //     }
-        // }
-        // return null;
-        
+        HashMap<String, String> error = new HashMap<>();
+    
+        if (checkBalanceDTO == null || checkBalanceDTO.getAccount().isEmpty()) {
+            
+            error.put("error", "400");
+            error.put("message", "Account ID is required");
+
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(error);
+        }
+
+        AccountEntity account = userService.checkBalance(checkBalanceDTO);
+        if (account == null) {
+            
+            error.put("error", "404");
+            error.put("message", "Account not found");
+
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(error);
+        }
+        return ResponseEntity.ok(account);
     }
+
 
     
     // @GetMapping("/deposits")

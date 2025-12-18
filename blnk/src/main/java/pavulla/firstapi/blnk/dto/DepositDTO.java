@@ -2,24 +2,27 @@ package pavulla.firstapi.blnk.dto;
 
 import java.time.LocalDateTime;
 
+
+
 public class DepositDTO {
-    private String userId;
+    
+    private String account;
     private double amount;
 
     public DepositDTO() {
     }
 
-    public DepositDTO(String userId, double amount) {
-        this.userId = userId;
+    public DepositDTO(String account, double amount) {
+        this.account = account;
         this.amount = amount;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getAccount() {
+        return account;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setAccount(String account) {
+        this.account = account;
     }
 
     public double getAmount() {

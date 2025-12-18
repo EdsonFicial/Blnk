@@ -10,5 +10,4 @@ public class BlnkApplication {
 		System.out.println("ITS WORKING");
 		SpringApplication.run(BlnkApplication.class, args);
 	}
-
 }

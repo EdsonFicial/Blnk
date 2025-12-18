@@ -1,4 +1,4 @@
-package pavulla.firstapi.blnk.service.ServiceImpl;
+package pavulla.firstapi.blnk.Service.ServiceImpl;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -7,11 +7,12 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transaction;
 import pavulla.firstapi.blnk.dto.*;
 import pavulla.firstapi.blnk.models.*;
 import pavulla.firstapi.blnk.repository.*;
-import pavulla.firstapi.blnk.service.UserService; 
+import pavulla.firstapi.blnk.Service.UserService;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -26,6 +27,8 @@ public class UserServiceImpl implements UserService {
     
     @Autowired
     private TransactionRepository transactionRepository;
+
+    private AccountRepository accRepository;
     
     @Autowired
     private WithdrawRepository withdrawRepository;
@@ -34,31 +37,39 @@ public class UserServiceImpl implements UserService {
     // private TransactionEntity transaction;
     
 
-    // O Spring vai injetar o repositório aqui
-    @Autowired
-    public UserServiceImpl(UserRepository userRepository, DepositRepository depositRepository) {
+    // O Spring will inject the UserRepository here
+   
+    public UserServiceImpl(UserRepository userRepository, DepositRepository depositRepository,TransactionRepository transactionRepository,AccountRepository accRepository) {
         this.userRepository = userRepository;
         this.depositRepository = depositRepository;
-
-        // ❌ NÃO faça chamadas ao repositório aqui
-        // Ex: userRepository.findAll();  <-- Remover
+        this.transactionRepository = transactionRepository;
+        this.accRepository = accRepository;
     }
     
     @Override
     public UserResponseDTO CreateUser(CreateUserDTO dto){
+        
+        // 1️⃣ Create and save User FIRST (no accountId yet)
         UserEntity user = new UserEntity();
-        AccountEntity acc = new AccountEntity();
-
         user.setName(dto.getName());
         user.setEmail(dto.getEmail());
         user.setPassword(dto.getPassword());
-        user.setbalance(0.0);
-        user = userRepository.save(user);
 
-        acc.setUserid(user.getId());
-        acc.setBalance(0);
+        user = userRepository.save(user); // 🔑 now user.getId() exists
+
+        // 2️⃣ Create and save Account using userId
+        AccountEntity acc = new AccountEntity();
+        acc.setUserid(user.getId());       // 🔑 REQUIRED
+        acc.setUser_name(user.getName());
+        acc.setBalance(0.0);
+
+        acc = accRepository.save(acc);     // 🔑 now acc.getId() exists
+
+        // 3️⃣ Update User with accountId
+        user.setAccountId(acc.getId());
+        userRepository.save(user);         // 🔑 update
+
         UserResponseDTO ur = new UserResponseDTO();
-
         ur = new UserResponseDTO(
             user.getId(),
             user.getName(),
@@ -97,40 +108,51 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public DepositEntity depositMoney(DepositDTO depositDTO) {
-        List<UserEntity> users = userRepository.findAll();
+        
+        //Busca a Conta
+        AccountEntity account = accRepository.findById(depositDTO.getAccount())
+        .orElseThrow(() ->
+            new EntityNotFoundException(
+                "Account not found for id: " + depositDTO.getAccount()
+            )
+        );
+        //Busca o Usuário dono da conta
+        UserEntity user = userRepository.findById(account.getUserid())
+        .orElseThrow(() ->
+            new EntityNotFoundException(
+                "User not found for id: " + account.getUserid()
+            )
+        );
+
+        //Atualiza o saldo da conta
+        account.setBalance(account.getBalance() + depositDTO.getAmount());
+        accRepository.save(account);
+
+        //Criar o depósito
         DepositEntity deposit = new DepositEntity();
-    
-            if(depositDTO.getUserId()!=null && !depositDTO.getUserId().equals("")){
-                for(UserEntity user : users){
-                    if(user.getId().equals(depositDTO.getUserId())) {
-                        deposit.setAmount(depositDTO.getAmount());
-                        deposit.setDepositedAt(LocalDateTime.now());
-                        deposit.setUser(user);
-                        user.setbalance(user.getbalance() + depositDTO.getAmount());
-                        depositRepository.save(deposit);
-                        System.out.println("" + user.getName() + " has deposited " + depositDTO.getAmount() + " at " + LocalDateTime.now());    
-                        
-                        // Save the transaction Entity
-                        TransactionEntity transaction = new TransactionEntity();
-                        transaction.setTipo("deposit");
-                        transaction.setValor(depositDTO.getAmount());
-                        transaction.setData(depositDTO.getDepositedAt());
-                        transaction.setUserId(depositDTO.getUserId());
-                        transaction.setUserName(user.getName());
-                        transactionRepository.save(transaction);
-                        
-                    }else {
-                        System.out.println("User not found for ID: " + depositDTO.getUserId()); 
-                    }
-                }
-            }else{
-                System.out.println("User ID is null");
-                return null;
-            }
+        deposit.setAmount(depositDTO.getAmount());
+        deposit.setDepositedAt(LocalDateTime.now());
+        deposit.setUser(user);
+        deposit.setUser_name(user.getName());
+        deposit.setAccount(account);
+
+        depositRepository.save(deposit);
+
+        // Criar a transação
+        TransactionEntity transaction = new TransactionEntity();
+        transaction.setTipo("deposit");
+        transaction.setValor(depositDTO.getAmount());
+        transaction.setData(LocalDateTime.now());
+        transaction.setUserId(user.getId());
+        transaction.setUserName(user.getName());
+
+        transactionRepository.save(transaction);
         return deposit;
+        
     }
+
     
-    @Override
+   @Override
     public WithdrawEntity withdrawMoney(WithdrawDTO withdrawDTO) {
         List<UserEntity> users = userRepository.findAll();
         WithdrawEntity withdraw = new WithdrawEntity();
@@ -139,10 +161,21 @@ public class UserServiceImpl implements UserService {
             if(withdrawDTO.getUserId() != null ) {
                 for(UserEntity user : users) {
                     if(user.getId().equals(withdrawDTO.getUserId())) {
-
+                        
+                        List<AccountEntity> accounts = accRepository.findAll();
                         TransactionEntity transaction = new TransactionEntity();
                         transaction.setUserName(user.getName());
-                        user.setbalance(user.getbalance() - withdrawDTO.getAmount());
+
+                        if(accounts.equals(withdrawDTO.getUserId())){
+                            for(AccountEntity account : accounts){
+                                if(account.getUserid().equals(withdrawDTO.getUserId())){
+                                    account.setBalance(account.getBalance() - withdrawDTO.getAmount());
+                                    accRepository.save(account);
+                                }
+                            }
+                        }
+
+                       
                         userRepository.save(user);
                         withdraw.setAmount(withdrawDTO.getAmount());
                         System.out.println("" + user.getName() + " has withdrawn " + withdrawDTO.getAmount() + " at " + LocalDateTime.now());
@@ -155,14 +188,29 @@ public class UserServiceImpl implements UserService {
                         transaction.setValor(withdrawDTO.getAmount());
                         transaction.setData(LocalDateTime.now());
                         transaction.setUserId(withdrawDTO.getUserId());
+                        
                     }else {
                         System.out.println("User not found for ID: " + withdrawDTO.getUserId());
                     }
                 }   
-
             } else {
             System.out.println("User ID is null");
             }
         return null;
+    }
+
+    @Override
+    public AccountEntity checkBalance(CheckBalanceDTO checkBalanceDTO) {
+
+
+        AccountEntity account = accRepository.findById(checkBalanceDTO.getAccount())
+        .orElseThrow(() ->
+            new EntityNotFoundException(
+                "Account not found for id: " + checkBalanceDTO.getAccount()
+            )
+        );
+
+        return account;
+
     }    
 }
