@@ -2,15 +2,14 @@ package pavulla.firstapi.blnk.Service.ServiceImpl;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collector;
+
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transaction;
-import lombok.val;
+
 import pavulla.firstapi.blnk.dto.*;
 import pavulla.firstapi.blnk.models.*;
 import pavulla.firstapi.blnk.repository.*;
