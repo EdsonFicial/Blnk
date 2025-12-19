@@ -23,7 +23,7 @@ public class TransactionEntity {
     private LocalDateTime data;
 
     @jakarta.persistence.Column(nullable = false)
-    private String user_id;
+    private String userId;
 
     @jakarta.persistence.Column(nullable = false)
     private String userName;
@@ -38,12 +38,12 @@ public class TransactionEntity {
     }
 
     
-    public TransactionEntity(String id, String tipo, double valor, LocalDateTime data, String user_id, String userName) {
+    public TransactionEntity(String id, String tipo, double valor, LocalDateTime data, String userId, String userName) {
         this.id = id;
         this.tipo = tipo;
         this.valor = valor;
         this.data = data;
-        this.user_id = user_id;
+        this.userId = userId;
         this.userName = userName;
     }
     public TransactionEntity() {
@@ -75,10 +75,10 @@ public class TransactionEntity {
         this.data = data;
     }
     public String getUserId() {
-        return user_id;
+        return userId;
     }
-    public void setUserId(String user_id) {
-        this.user_id = user_id;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
     public String getUserName() {
         return userName;

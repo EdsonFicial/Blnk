@@ -6,11 +6,12 @@ import pavulla.firstapi.blnk.dto.UserResponseDTO;
 import pavulla.firstapi.blnk.dto.WithdrawDTO;
 import pavulla.firstapi.blnk.models.AccountEntity;
 import pavulla.firstapi.blnk.models.DepositEntity;
+import pavulla.firstapi.blnk.models.TransactionEntity;
 import pavulla.firstapi.blnk.models.WithdrawEntity;
 
 import java.util.List;
 
-import jakarta.transaction.Transaction;
+
 
 public interface UserService {
     
@@ -18,6 +19,6 @@ public interface UserService {
     List<UserResponseDTO> getAllUsers();
     DepositEntity depositMoney(DepositDTO depositDTO);
     WithdrawEntity withdrawMoney(WithdrawDTO withdrawDTO);
-    Transaction getUserTransactions(String userId);
+    List<TransactionEntity> getUserTransactions(String userId);
     AccountEntity checkBalance(CheckBalanceDTO checkBalanceDTO);
 }

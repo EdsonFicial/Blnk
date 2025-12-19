@@ -2,6 +2,7 @@ package pavulla.firstapi.blnk.Service.ServiceImpl;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transaction;
+import lombok.val;
 import pavulla.firstapi.blnk.dto.*;
 import pavulla.firstapi.blnk.models.*;
 import pavulla.firstapi.blnk.repository.*;
@@ -28,17 +30,14 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private TransactionRepository transactionRepository;
 
+    @Autowired
     private AccountRepository accRepository;
-    
+
     @Autowired
     private WithdrawRepository withdrawRepository;
-    // private UserResponseDTO ur;
-    // private UserEntity user;
-    // private TransactionEntity transaction;
     
 
     // O Spring will inject the UserRepository here
-   
     public UserServiceImpl(UserRepository userRepository, DepositRepository depositRepository,TransactionRepository transactionRepository,AccountRepository accRepository) {
         this.userRepository = userRepository;
         this.depositRepository = depositRepository;
@@ -87,9 +86,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserResponseDTO> getAllUsers() {
         List<UserEntity> users = userRepository.findAll();
-        AccountEntity acc = new AccountEntity();
-
-        
+        AccountEntity acc = new AccountEntity();  
         return users.stream()
         .map(user -> new UserResponseDTO(user.getId(),
             user.getName(),
@@ -100,11 +97,7 @@ public class UserServiceImpl implements UserService {
         );
     }
 
-    @Override
-    public Transaction getUserTransactions(String userId) {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    
 
     @Override
     public DepositEntity depositMoney(DepositDTO depositDTO) {
@@ -154,63 +147,61 @@ public class UserServiceImpl implements UserService {
     
    @Override
     public WithdrawEntity withdrawMoney(WithdrawDTO withdrawDTO) {
-        List<UserEntity> users = userRepository.findAll();
+            
+        //Busca a Conta
+        AccountEntity account = accRepository.findById(withdrawDTO.getAccount())
+        .orElseThrow(() ->
+            new EntityNotFoundException(
+                "Account not found for id: " + withdrawDTO.getAccount()
+            )
+        );
+
+        //Busca o Usuário dono da conta
+        UserEntity user = userRepository.findById(account.getUserid())
+        .orElseThrow(() ->
+            new EntityNotFoundException(
+                "User not found for id: " + account.getUserid()
+            )
+        );
+
+        account.setBalance(account.getBalance() - withdrawDTO.getAmount());
+        accRepository.save(account);
+
         WithdrawEntity withdraw = new WithdrawEntity();
+        withdraw.setAmount(withdrawDTO.getAmount());
+        withdraw.setUserId(user.getId());
+        withdraw.setTimestamp(LocalDateTime.now());
+        withdrawRepository.save(withdraw);
 
-            // Save the withdrawal entity
-            if(withdrawDTO.getUserId() != null ) {
-                for(UserEntity user : users) {
-                    if(user.getId().equals(withdrawDTO.getUserId())) {
-                        
-                        List<AccountEntity> accounts = accRepository.findAll();
-                        TransactionEntity transaction = new TransactionEntity();
-                        transaction.setUserName(user.getName());
-
-                        if(accounts.equals(withdrawDTO.getUserId())){
-                            for(AccountEntity account : accounts){
-                                if(account.getUserid().equals(withdrawDTO.getUserId())){
-                                    account.setBalance(account.getBalance() - withdrawDTO.getAmount());
-                                    accRepository.save(account);
-                                }
-                            }
-                        }
-
-                       
-                        userRepository.save(user);
-                        withdraw.setAmount(withdrawDTO.getAmount());
-                        System.out.println("" + user.getName() + " has withdrawn " + withdrawDTO.getAmount() + " at " + LocalDateTime.now());
-                        withdraw.setUserId(withdrawDTO.getUserId());
-                        withdraw.setTimestamp(LocalDateTime.now());
-                        withdrawRepository.save(withdraw);
-                        
-                        // Save the transaction 
-                        transaction.setTipo("withdraw");
-                        transaction.setValor(withdrawDTO.getAmount());
-                        transaction.setData(LocalDateTime.now());
-                        transaction.setUserId(withdrawDTO.getUserId());
-                        
-                    }else {
-                        System.out.println("User not found for ID: " + withdrawDTO.getUserId());
-                    }
-                }   
-            } else {
-            System.out.println("User ID is null");
-            }
-        return null;
+        // Criar a transação
+        TransactionEntity transaction = new TransactionEntity();
+        transaction.setTipo("withdraw");
+        transaction.setValor(withdrawDTO.getAmount());
+        transaction.setData(LocalDateTime.now());
+        transaction.setUserId(user.getId());
+        transaction.setUserName(user.getName());
+        transactionRepository.save(transaction);
+        return withdraw;
     }
+
 
     @Override
     public AccountEntity checkBalance(CheckBalanceDTO checkBalanceDTO) {
-
-
         AccountEntity account = accRepository.findById(checkBalanceDTO.getAccount())
         .orElseThrow(() ->
             new EntityNotFoundException(
                 "Account not found for id: " + checkBalanceDTO.getAccount()
             )
         );
-
         return account;
+    }
 
-    }    
+    @Override
+    public List<TransactionEntity> getUserTransactions(String userId) {
+        List<TransactionEntity> txs = transactionRepository.findAll()
+        .stream()
+        .filter(t -> t.getUserId().equals(userId))
+        .toList();
+        return txs;
+    }
 }

@@ -1,8 +1,7 @@
 package pavulla.firstapi.blnk.dto;
 
 public class WithdrawDTO {
-    private String userId;
-    private String customername;
+    private String account;
     private Double amount;
     
 
@@ -10,24 +9,17 @@ public class WithdrawDTO {
         // Default constructor
     }
 
-    public WithdrawDTO(String userId,String customername, Double amount) {
-        this.userId = userId;
-        this.customername = customername;   
+    public WithdrawDTO(String userId, Double amount) {
+        this.account = userId; 
         this.amount = amount;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getAccount() {
+        return account;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-    public String getCustomername() {
-        return customername;
-    }
-    public void setCustomername(String customername) {
-        this.customername = customername;
+    public void setAccount(String userId) {
+        this.account = userId;
     }
 
     public Double getAmount() {

@@ -1,16 +1,17 @@
 package pavulla.firstapi.blnk.models;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 
 
 @Entity
-@Table(name = "withdrawals")
+@Table(name = "withdraws")
 public class WithdrawEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(nullable = false)
+    private String id;
 
     @Column(nullable = false)
     private String userId;
@@ -20,6 +21,14 @@ public class WithdrawEntity {
 
     @Column(nullable = false)
     private LocalDateTime timestamp;
+    
+     // Gera o ID automaticamente antes de persistir
+    @PrePersist
+    public void generateId() {
+        if (this.id == null || this.id.isEmpty()) {
+            this.id = "with-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        }
+    }
 
     public WithdrawEntity() {
         // No-arg constructor required by JPA
@@ -31,7 +40,7 @@ public class WithdrawEntity {
         this.timestamp = timestamp;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 

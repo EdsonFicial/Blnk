@@ -26,7 +26,7 @@ public class UserEntity {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "account_id",nullable = false)
+    @Column(name = "account_id")
     private String accountId;
 
      // Gera o ID automaticamente antes de persistir

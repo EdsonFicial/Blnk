@@ -2,6 +2,8 @@ package pavulla.firstapi.blnk.repository;
 
 
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import pavulla.firstapi.blnk.models.TransactionEntity;
@@ -10,6 +12,6 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
     // Additional query methods can be defined here if needed
     // List all transactions by user ID
 
-    
+    List<TransactionEntity> findByUserId(String userId);
 
 }
